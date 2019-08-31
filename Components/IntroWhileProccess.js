@@ -16,12 +16,20 @@ fw = Dimensions.get("screen").width;
 fh = Dimensions.get("screen").height;
 
 export default class IntroWhileProccess extends Component {
+  constructor() {
+    super();
+    this.state = {
+      errorLocation: false
+    };
+  }
   async componentDidMount() {
     // we get info about location
     let { status } = await Permissions.askAsync(Permissions.LOCATION);
 
     if (status !== "granted") {
-      console.log("Permission to access location was denied");
+      this.setState({
+        errorLocation: true
+      });
       return;
     }
 
@@ -32,14 +40,12 @@ export default class IntroWhileProccess extends Component {
       longitude: location.coords.longitude
     });
 
-    console.log(location, location_);
+    // console.log(location, location_);
 
     await _storeData(
       "countryInfo",
       JSON.stringify({ location: location, location_: location_ })
     );
-
-    return;
     // check if log in or not
     // we look for asyncStore 'logIn'
     logIn = await _retrieveData("logIn");
@@ -69,12 +75,22 @@ export default class IntroWhileProccess extends Component {
           bottom: "always"
         }}
       >
-        <View style={style.message}>
-          <Text style={style.messageText}>
-            Please help us to get infor about your location to help you find
-            Community/news/party near to you
-          </Text>
-        </View>
+        {this.state.errorLocation ? (
+          <View style={style.messageCover}>
+            <View style={style.message}>
+              <ImageBackground
+                style={{ height: 30, width: 30 }}
+                source={require("../assets/warning-icons-143676-4978403.png")}
+              ></ImageBackground>
+              <Text style={style.messageText}>
+                Please help us to get info about your location to help you find
+                best events
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <View></View>
+        )}
         <View style={style.Container}>
           <ImageBackground
             source={require("../assets/Sign-bg.jpg")}
@@ -114,23 +130,42 @@ style = StyleSheet.create({
     opacity: 0.4,
     position: "absolute"
   },
+
+  messageCover: {
+    position: "absolute",
+    zIndex: 1,
+    marginTop: "10%",
+    flexDirection: "column",
+    alignItems: "center",
+    width: fw
+    // height: fh
+  },
+  message: {
+    backgroundColor: "#fff",
+    width: fw * 0.9,
+    borderRadius: 4,
+    padding: 8,
+    justifyContent: "space-between",
+    alignItems: "center",
+    elevation: 2,
+    flexDirection: "row"
+  },
+  messageText: {
+    width: "90%",
+    textAlign: "center",
+    color: "#ffbb33",
+    fontSize: 18,
+    textShadowColor: "rgba(0, 0, 0, .4)",
+    textShadowRadius: 1
+  },
   LoadingCover: {
     width: fw,
     height: fh,
     position: "absolute",
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "flex-end"
-  },
-  message: {
-    position: "absolute",
-    zIndex: 1,
-    padding: "10%"
-  },
-  messageText: {
-    textAlign: "center",
-    color: "#ff4444",
-    fontSize: 15
+    alignItems: "flex-end",
+    padding: 50
   },
   Loading: {
     width: 40,

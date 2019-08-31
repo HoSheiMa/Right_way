@@ -20,7 +20,9 @@ export default class fullCard extends Component {
   };
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      joined: false
+    };
   }
 
   render() {
@@ -60,7 +62,17 @@ export default class fullCard extends Component {
         </V>
         <V style={styles.btnGroup}>
           <V style={styles.btnJoin}>
-            <T style={styles.btnJoinTitle}>Join</T>
+            <T
+              style={[
+                styles.btnJoinTitle,
+                {
+                  color: this.state.joined ? "#00C851" : "#000"
+                }
+              ]}
+            >
+              {" "}
+              join (22)
+            </T>
           </V>
           <V style={styles.btnNotf}>
             <Img

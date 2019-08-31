@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { getUserData } from "./helpers/userData";
+import { _retrieveData } from "./helpers/Functions";
 import {
   createAppContainer,
   createDrawerNavigator,
@@ -25,14 +26,32 @@ fw = Dimensions.get("screen").width;
 fh = Dimensions.get("screen").height;
 
 class Home_ extends Component {
+  constructor() {
+    super();
+    this.state = {
+      givenName: "",
+      photoUrl: null,
+      countryLogoUrl: null
+    };
+  }
   async componentWillMount() {
     var data = await getUserData(["givenName", "photoUrl"]);
+
+    var dataC = await _retrieveData("countryInfo");
+    dataC = JSON.parse(dataC);
+    var iso = dataC.location_[0].isoCountryCode;
+
+    var url = {
+      countryLogoUrl: `https://www.countryflags.io/${iso}/shiny/64.png`
+    };
+
+    data = {
+      ...data,
+      ...url
+    };
+
     this.setState(data);
   }
-  state = {
-    givenName: "",
-    photoUrl: null
-  };
 
   render() {
     return (
@@ -61,6 +80,16 @@ class Home_ extends Component {
             </View>
           </TouchableWithoutFeedback>
           <Text style={style.nav_Logo}> LOGO </Text>
+          <View style={style.navCountryCover}>
+            <ImageBackground
+              source={
+                this.state.countryLogoUrl == null
+                  ? require("../assets/Flag_-_Unknown.png")
+                  : { uri: this.state.countryLogoUrl }
+              }
+              style={style.navCountry}
+            ></ImageBackground>
+          </View>
         </View>
         <LinearGradient
           style={style.box_profile}
@@ -135,11 +164,11 @@ Events_N = createStackNavigator({
 });
 
 const MyDrawerNavigator = createDrawerNavigator({
-  Events: {
-    screen: Events_N
-  },
   Home: {
     screen: Home_
+  },
+  Events: {
+    screen: Events_N
   }
 });
 
@@ -181,6 +210,17 @@ const style = StyleSheet.create({
       width: 0,
       height: 3
     }
+  },
+  navCountryCover: {
+    position: "absolute",
+    width: fw,
+    zIndex: -1,
+    alignItems: "flex-end",
+    padding: 10
+  },
+  navCountry: {
+    width: 40,
+    height: 40
   },
   box_profile: {
     width: fw,

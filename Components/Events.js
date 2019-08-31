@@ -10,12 +10,28 @@ import {
 } from "react-native";
 
 import { SafeAreaView as S } from "react-navigation";
+import { _retrieveData } from "./helpers/Functions";
 
 fw = Dimensions.get("screen").width;
 fh = Dimensions.get("screen").height;
 
 import EventCard from "./assetsComponents/EventCard";
 export default class Events extends Component {
+  constructor() {
+    super();
+    this.state = {
+      countryLogoUrl: null
+    };
+  }
+  async componentWillMount() {
+    var dataC = await _retrieveData("countryInfo");
+    dataC = JSON.parse(dataC);
+    var iso = dataC.location_[0].isoCountryCode;
+
+    this.setState({
+      countryLogoUrl: `https://www.countryflags.io/${iso}/shiny/64.png`
+    });
+  }
   static navigationOptions = {
     header: null
   };
@@ -43,6 +59,16 @@ export default class Events extends Component {
               </V>
             </Touch>
             <T style={style.nav_Logo}> LOGO </T>
+            <V style={style.navCountryCover}>
+              <Img
+                source={
+                  this.state.countryLogoUrl == null
+                    ? require("../assets/Flag_-_Unknown.png")
+                    : { uri: this.state.countryLogoUrl }
+                }
+                style={style.navCountry}
+              ></Img>
+            </V>
           </V>
 
           <V style={style.bgCover}>
@@ -105,6 +131,17 @@ const style = StyleSheet.create({
       width: 0,
       height: 3
     }
+  },
+  navCountryCover: {
+    position: "absolute",
+    width: fw,
+    zIndex: -1,
+    alignItems: "flex-end",
+    padding: 10
+  },
+  navCountry: {
+    width: 40,
+    height: 40
   },
   bgCover: {
     width: fw,
