@@ -16,11 +16,13 @@ fw = Dimensions.get("screen").width;
 fh = Dimensions.get("screen").height;
 
 import EventCard from "./assetsComponents/EventCard";
+import FirebaseApp from "./helpers/FirebaseApp";
 export default class Events extends Component {
   constructor() {
     super();
     this.state = {
-      countryLogoUrl: null
+      countryLogoUrl: null,
+      events: []
     };
   }
   async componentWillMount() {
@@ -31,6 +33,31 @@ export default class Events extends Component {
     this.setState({
       countryLogoUrl: `https://www.countryflags.io/${iso}/shiny/64.png`
     });
+  }
+
+  componentDidMount() {
+    FirebaseApp.firestore()
+      .collection("Events")
+      .get()
+      .then(d => {
+        if (d.isEqual == true) {
+          this.setState({
+            events: null
+          });
+
+          return;
+        }
+        var events = [];
+        d.forEach(doc => {
+          var data = doc.data();
+          events.push(data);
+        });
+
+        this.setState({
+          events: events
+        });
+        // console.log(d);
+      });
   }
   static navigationOptions = {
     header: null
@@ -79,24 +106,37 @@ export default class Events extends Component {
           </V>
           <T style={style.title}>Events</T>
           <SV style={style.eventsList}>
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
-            <EventCard page={this.props} />
+            {this.state.events.map((v, i) => {
+              return <EventCard key={i} page={this.props} data={v} />;
+            })}
+            {this.state.events == null ? (
+              <V
+                style={{
+                  textAlign: "center",
+                  alignItems: "center",
+                  padding: 12,
+                  fontSize: 19
+                }}
+              >
+                <T>No Events Yet.</T>
+              </V>
+            ) : (
+              <V></V>
+            )}
+            {this.state.events != null && this.state.events.length == 0 ? (
+              <V
+                style={{
+                  textAlign: "center",
+                  alignItems: "center",
+                  padding: 12,
+                  fontSize: 19
+                }}
+              >
+                <T>Loading...</T>
+              </V>
+            ) : (
+              <V></V>
+            )}
           </SV>
         </V>
       </S>

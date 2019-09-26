@@ -7,7 +7,8 @@ import {
   Dimensions,
   ImageBackground,
   TouchableWithoutFeedback,
-  ScrollView
+  ScrollView,
+  Platform
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { getUserData } from "./helpers/userData";
@@ -16,16 +17,22 @@ import {
   createAppContainer,
   createDrawerNavigator,
   SafeAreaView,
-  createStackNavigator
+  createStackNavigator,
+  DrawerItems
 } from "react-navigation";
 import HomeCard from "./assetsComponents/HomeCard";
 import Events from "./Events";
 import fullCard from "./assetsComponents/fullCard";
+import AddOne from "./AddOne";
+import { Notifications } from "expo";
 
 fw = Dimensions.get("screen").width;
 fh = Dimensions.get("screen").height;
 
 class Home_ extends Component {
+  static navigationOptions = {
+    header: null
+  };
   constructor() {
     super();
     this.state = {
@@ -34,6 +41,7 @@ class Home_ extends Component {
       countryLogoUrl: null
     };
   }
+
   async componentWillMount() {
     var data = await getUserData(["givenName", "photoUrl"]);
 
@@ -138,17 +146,18 @@ class Home_ extends Component {
             <HomeCard />
             <HomeCard />
             <HomeCard />
-            <HomeCard />
-            <HomeCard />
-            <HomeCard />
-            <HomeCard />
-            <HomeCard />
-            <HomeCard />
-            <HomeCard />
-            <HomeCard />
-            <HomeCard />
           </ScrollView>
         </View>
+        <TouchableWithoutFeedback
+          onPress={() => {
+            console.log("clicked");
+            this.props.navigation.navigate("AddOne");
+          }}
+        >
+          <View style={style.FloatBtn}>
+            <Text style={style.floatbtntext}>+</Text>
+          </View>
+        </TouchableWithoutFeedback>
       </SafeAreaView>
     );
   }
@@ -163,14 +172,137 @@ Events_N = createStackNavigator({
   }
 });
 
-const MyDrawerNavigator = createDrawerNavigator({
-  Home: {
+Home_N = createStackNavigator({
+  Home_: {
     screen: Home_
   },
-  Events: {
-    screen: Events_N
+  AddOne: {
+    screen: AddOne
   }
 });
+
+class HomeDrawer extends Component {
+  state = {};
+  async componentWillMount() {
+    var data = await getUserData(["givenName", "photoUrl"]);
+
+    var dataC = await _retrieveData("countryInfo");
+    dataC = JSON.parse(dataC);
+    var iso = dataC.location_[0].isoCountryCode;
+    var countryName = dataC.location_[0].country;
+    var url = {
+      countryLogoUrl: `https://www.countryflags.io/${iso}/shiny/64.png`,
+      countryName
+    };
+
+    this.setState({
+      ...data,
+      ...url
+    });
+  }
+
+  render() {
+    return (
+      <SafeAreaView
+        style={{
+          width: fw * 0.8,
+          height: fh
+        }}
+        forceInset={{
+          top: "always",
+          bottom: "always"
+        }}
+      >
+        <View
+          style={{
+            width: "100%",
+            height: 150,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#f8f9fa"
+          }}
+        >
+          <ImageBackground
+            style={{
+              width: 75,
+              height: 75,
+              borderRadius: 3000
+            }}
+            imageStyle={{
+              borderRadius: 3000,
+              zIndex: 1
+            }}
+            source={{ uri: this.state.photoUrl }}
+          />
+        </View>
+        <View
+          style={{
+            width: "100%",
+            height: 30,
+            backgroundColor: "#f8f9fa",
+            marginTop: 4,
+            flexDirection: "row",
+            justifyContent: "space-evenly",
+            alignItems: "center"
+          }}
+        >
+          <Text
+            style={{
+              fontWeight: "bold"
+            }}
+          >
+            {this.state.givenName}
+          </Text>
+        </View>
+        <View
+          style={{
+            width: "100%",
+            height: 30,
+            backgroundColor: "#f8f9fa",
+            marginTop: 4,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
+        >
+          <ImageBackground
+            source={{ uri: this.state.countryLogoUrl }}
+            style={{
+              width: 25,
+              height: 25,
+              marginRight: 2
+            }}
+          />
+          <Text
+            style={{
+              fontWeight: "bold"
+            }}
+          >
+            {this.state.countryName}
+          </Text>
+        </View>
+        <ScrollView style={{ width: fw * 0.8 }}>
+          <DrawerItems {...this.props} />
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+}
+
+const MyDrawerNavigator = createDrawerNavigator(
+  {
+    Home: {
+      screen: Home_N
+    },
+    Events: {
+      screen: Events_N
+    }
+  },
+  {
+    contentComponent: HomeDrawer,
+    drawerWidth: fw * 0.8
+  }
+);
 
 const MyApp = createAppContainer(MyDrawerNavigator);
 
@@ -294,5 +426,21 @@ const style = StyleSheet.create({
   goalsBox_scrollView: {
     overflow: "scroll",
     flex: 1
+  },
+  FloatBtn: {
+    position: "absolute",
+    zIndex: 9999,
+    top: fh * 0.9,
+    left: fw * 0.8,
+    width: 65,
+    height: 65,
+    backgroundColor: "#fff",
+    elevation: 4,
+    borderRadius: 5000,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  floatbtntext: {
+    fontSize: 32
   }
 });

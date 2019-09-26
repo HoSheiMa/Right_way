@@ -8,7 +8,8 @@ import {
   TouchableWithoutFeedback
 } from "react-native";
 import { Google } from "expo";
-import { _storeData } from "./helpers/Functions";
+import { _storeData, _retrieveData } from "./helpers/Functions";
+import FirebaseApp from "./helpers/FirebaseApp";
 
 fw = Dimensions.get("screen").width;
 fh = Dimensions.get("screen").height;
@@ -17,7 +18,35 @@ export default class Sign extends Component {
     header: null
   };
   state = {
-    paddingLoadPage: false
+    paddingLoadPage: false,
+    LocationData: null
+  };
+
+  async componentWillMount() {
+    var Ldata = await _retrieveData("countryInfo");
+    if (Ldata != null) {
+      Ldata = JSON.parse(Ldata);
+      this.setState({
+        LocationData: Ldata
+      });
+    }
+  }
+
+  SignUpDataToCache = async data => {
+    try {
+      data = JSON.stringify(data); // we return data to string to can save it
+
+      await _storeData("userData", data);
+
+      await _storeData("logIn", "true");
+
+      this.props.navigation.navigate("Home");
+    } catch ({ message }) {
+      this.setState({
+        paddingLoadPage: false
+      });
+      console.log("GoogleSignIn.initAsync(): " + message);
+    }
   };
   _signIn = async () => {
     try {
@@ -40,13 +69,30 @@ export default class Sign extends Component {
         return;
       }
 
-      data = JSON.stringify(data); // we return data to string to can save it
+      var userId = data.user.id;
 
-      await _storeData("userData", data);
-
-      await _storeData("logIn", "true");
-
-      this.props.navigation.navigate("Home");
+      var U_ref = FirebaseApp.firestore()
+        .collection("users")
+        .doc(userId);
+      U_ref.get().then(snaps => {
+        if (snaps.exists != true) {
+          // sign in before
+          console.log("Yes");
+          U_ref.set({
+            ...data,
+            ...this.state.LocationData
+          })
+            .then(() => {
+              console.log("Done added");
+              this.SignUpDataToCache(data);
+            })
+            .catch(e => console.log(e));
+        } else {
+          // no sign in before
+          console.log("No");
+          this.SignUpDataToCache(data);
+        }
+      });
     } catch ({ message }) {
       this.setState({
         paddingLoadPage: false

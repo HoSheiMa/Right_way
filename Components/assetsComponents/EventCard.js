@@ -17,17 +17,26 @@ export default class EventCard extends Component {
   }
   FullInfo = () => {
     console.log("full card info!");
-    this.props.page.navigation.navigate("fullCard");
+    this.props.page.navigation.navigate("fullCard", { ...this.props.data });
   };
   render() {
     return (
       <V style={style.cover}>
         <V style={style.card}>
-          <Img style={style.cardImage}></Img>
+          <Img
+            resizeMode="cover"
+            imageStyle={{
+              borderRadius: 12,
+              width: "100%",
+              height: "100%"
+            }}
+            style={style.cardImage}
+            source={{ uri: this.props.data.ImgUrl }}
+          ></Img>
           <V style={style.content}>
             <V>
-              <T>Title..</T>
-              <T>Info.....</T>
+              <T>{this.props.data.Title}</T>
+              <T numberOfLines={2}>{this.props.data.Info}</T>
             </V>
             <V style={style.btnGroup}>
               <V style={style.btnJoin}>
@@ -79,9 +88,9 @@ const style = Css.create({
   },
   cardImage: {
     height: "84%",
-    width: "30%",
+    width: 100,
     borderRadius: 12,
-    backgroundColor: "silver"
+    backgroundColor: "#f8f9fa"
   },
   content: {
     width: "63%",

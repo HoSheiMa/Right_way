@@ -18,8 +18,8 @@ export default class fullCard extends Component {
   static navigationOptions = {
     header: null
   };
-  constructor(props) {
-    super(props);
+  constructor() {
+    super();
     this.state = {
       joined: false
     };
@@ -35,26 +35,24 @@ export default class fullCard extends Component {
       >
         <V style={styles.Body}>
           <V style={styles.cover}>
-            <Img source={null} style={styles.img}></Img>
+            <Img
+              imageStyle={{
+                borderRadius: 12,
+                width: "100%",
+                height: "100%"
+              }}
+              source={{ uri: this.props.navigation.getParam("ImgUrl") }}
+              style={styles.img}
+            ></Img>
           </V>
           <V style={styles.coverInfo}>
             <V style={styles.coverCenter}>
-              <T style={styles.title}>Title</T>
+              <T style={styles.title}>
+                {this.props.navigation.getParam("Title")}
+              </T>
               <SV style={style.scrollViewInfo}>
                 <T style={styles.info}>
-                  {" "}
-                  info info info info info info info info info info info info
-                  info info info info info info info info info info info info
-                  info info info info info info info info info info info info
-                  info info info info info info info info info info info info
-                  info info info info info info info info info info info info
-                  info info info info info info info info info info info info
-                  info info info info info info info info info info info info
-                  info info info info info info info info info info info info
-                  info info info info info info info info info info info info
-                  info info info info info info info info info info info info
-                  info info info info info info info info info info info info
-                  info info info info info info info info info info{" "}
+                  {this.props.navigation.getParam("Info")}
                 </T>
               </SV>
             </V>
@@ -91,7 +89,7 @@ var styles = StyleSheet.create({
     height: fh
   },
   cover: {
-    width: "100%",
+    width: fw,
     height: "40%",
     justifyContent: "center",
     alignItems: "center"
