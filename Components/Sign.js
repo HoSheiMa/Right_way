@@ -7,7 +7,8 @@ import {
   StyleSheet,
   TouchableWithoutFeedback
 } from "react-native";
-import { Google } from "expo";
+// import { Google } from "expo";
+import * as Google from "expo-google-app-auth";
 import { _storeData, _retrieveData } from "./helpers/Functions";
 import FirebaseApp from "./helpers/FirebaseApp";
 

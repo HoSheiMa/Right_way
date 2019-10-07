@@ -15,6 +15,7 @@ import * as Permissions from "expo-permissions";
 fw = Dimensions.get("screen").width;
 fh = Dimensions.get("screen").height;
 
+import { Notifications } from "expo";
 export default class IntroWhileProccess extends Component {
   constructor() {
     super();
@@ -33,6 +34,30 @@ export default class IntroWhileProccess extends Component {
       return;
     }
 
+    const { status: existingStatus } = await Permissions.getAsync(
+      Permissions.NOTIFICATIONS
+    );
+    let finalStatus = existingStatus;
+
+    // only ask if permissions have not already been determined, because
+    // iOS won't necessarily prompt the user a second time.
+    if (existingStatus !== "granted") {
+      // Android remote notification permissions are granted during the app
+      // install, so this will only ask on iOS
+      const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+      finalStatus = status;
+    }
+
+    // Stop here if the user did not grant permissions
+    if (finalStatus !== "granted") {
+      return;
+    }
+
+    // Get the token that uniquely identifies this device
+    let token = await Notifications.getExpoPushTokenAsync();
+
+    console.log(token);
+
     let location = await Location.getCurrentPositionAsync({});
 
     let location_ = await Location.reverseGeocodeAsync({
@@ -44,7 +69,7 @@ export default class IntroWhileProccess extends Component {
 
     await _storeData(
       "countryInfo",
-      JSON.stringify({ location: location, location_: location_ })
+      JSON.stringify({ location: location, location_: location_, token: token })
     );
     // check if log in or not
     // we look for asyncStore 'logIn'

@@ -11,8 +11,14 @@ import {
 
 import { SafeAreaView as S } from "react-navigation";
 
+import { getUserData } from "./../helpers/userData";
+import { _retrieveData } from "./../helpers/Functions";
+
+import FirebaseApp from "./../helpers/FirebaseApp";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 var fw = Dimensions.get("window").width;
 var fh = Dimensions.get("window").height;
+import Store from "./../helpers/store/store";
 
 export default class fullCard extends Component {
   static navigationOptions = {
@@ -21,18 +27,78 @@ export default class fullCard extends Component {
   constructor() {
     super();
     this.state = {
-      joined: false
+      join: false,
+      loading: false,
+      notf: false
     };
   }
+  async componentDidMount() {
+    var Joiners = this.props.navigation.getParam("Joiners");
+    var UserId = await getUserData("id");
+    for (var i in Joiners) {
+      if (Joiners[i].UserId == UserId) {
+        this.setState({
+          join: true
+        });
+        break;
+      }
+    }
+  }
+  Join = async () => {
+    if (this.state.loading == true) return; // block extra reqs !
+    this.setState({
+      loading: true
+    });
+    var id = this.props.navigation.getParam("Id");
+    var UserId = await getUserData("id");
+    var token = JSON.parse(await _retrieveData("countryInfo")).token;
+    FirebaseApp.firestore()
+      .collection("Events")
+      .limit(1)
+      .where("Id", "==", id)
+      .get()
+      .then(snap => {
+        if (snap.empty == true) {
+          return;
+        }
+
+        var values = snap.docs[0].data();
+
+        var docId = snap.docs[0].id;
+
+        var Joiners = values.Joiners;
+
+        if (this.state.join == false) {
+          Joiners.push({
+            UserId: UserId,
+            NotfKey: token
+          });
+        } else {
+          for (var i in Joiners) {
+            if (Joiners[i].UserId == UserId) {
+              Joiners.splice(i, 1); // delete
+              break;
+            }
+          }
+        }
+        FirebaseApp.firestore("Events")
+          .doc(`Events/${docId}`)
+          .update({
+            Joiners: Joiners
+          })
+          .then(() => {
+            this.setState({
+              join: !this.state.join,
+              loading: false
+            });
+            Store.getState().AppSetState.EventCompo();
+          });
+      });
+  };
 
   render() {
     return (
-      <S
-        forceInset={{
-          top: "always",
-          bottom: "always"
-        }}
-      >
+      <V>
         <V style={styles.Body}>
           <V style={styles.cover}>
             <Img
@@ -59,27 +125,64 @@ export default class fullCard extends Component {
           </V>
         </V>
         <V style={styles.btnGroup}>
-          <V style={styles.btnJoin}>
-            <T
+          <TouchableWithoutFeedback
+            onPress={this.Join}
+            style={{
+              width: fw * 0.75,
+              marginRight: 7
+            }}
+          >
+            <V
               style={[
-                styles.btnJoinTitle,
+                styles.btnJoin,
                 {
-                  color: this.state.joined ? "#00C851" : "#000"
+                  backgroundColor: this.state.join
+                    ? "#00C851"
+                    : "rgba(255, 136, 101, .16)"
                 }
               ]}
             >
-              {" "}
-              join (22)
-            </T>
-          </V>
-          <V style={styles.btnNotf}>
-            <Img
-              source={require("../../assets/notifications-button.png")}
-              style={styles.btnNoftImage}
-            ></Img>
-          </V>
+              {this.state.loading ? (
+                <Img
+                  style={{ height: 30, width: 30 }}
+                  source={require("./../../assets/loading.gif")}
+                ></Img>
+              ) : (
+                <V>
+                  <T
+                    style={[
+                      style.btnJoinTitle,
+                      {
+                        color: this.state.join ? "#fff" : "#000"
+                      }
+                    ]}
+                  >
+                    {this.state.join ? "Joined" : "Join"}
+                  </T>
+                </V>
+              )}
+            </V>
+          </TouchableWithoutFeedback>
+          <Touch
+            onPress={() => {
+              this.setState({
+                notf: !this.state.notf
+              });
+            }}
+          >
+            <V style={styles.btnNotf}>
+              <Img
+                source={
+                  this.state.notf
+                    ? require("../../assets/turn-notifications-on-button.png")
+                    : require("../../assets/notifications-button.png")
+                }
+                style={styles.btnNoftImage}
+              ></Img>
+            </V>
+          </Touch>
         </V>
-      </S>
+      </V>
     );
   }
 }
@@ -120,7 +223,7 @@ var styles = StyleSheet.create({
   info: {},
   btnGroup: {
     width: fw,
-    height: fh,
+    height: fh * 0.98,
     flexDirection: "row",
     position: "absolute",
     alignItems: "flex-end",
@@ -128,12 +231,11 @@ var styles = StyleSheet.create({
   },
   btnJoin: {
     height: 43,
-    width: "86%",
+    width: "100%",
     borderRadius: 4,
     backgroundColor: "rgba(255, 136, 101, .16)",
     justifyContent: "center",
-    alignItems: "center",
-    marginRight: 3
+    alignItems: "center"
   },
   btnJoinTitle: {
     fontSize: 19

@@ -5,10 +5,14 @@ import About from "./Components/About";
 import Sign from "./Components/Sign";
 import Events from "./Components/Events";
 import IntroWhileProccess from "./Components/IntroWhileProccess";
+import { Provider } from "react-redux";
+
+import Store from "./Components/helpers/store/store";
 import {
   createStackNavigator,
   createAppContainer,
-  createSwitchNavigator
+  createSwitchNavigator,
+  SafeAreaView
 } from "react-navigation";
 
 // AsyncStorage.clear()
@@ -47,8 +51,22 @@ const AppContainer = createAppContainer(AppNavigator);
 
 export default class App extends React.Component {
   render() {
-    return <AppContainer />;
+    return (
+      <Provider store={Store}>
+        <SafeAreaView
+          style={{
+            flex: 1
+          }}
+          forceInset={{
+            top: "always",
+            bottom: "always"
+          }}
+        >
+          <AppContainer />
+        </SafeAreaView>
+      </Provider>
+    );
   }
 }
 
-// AppRegistry.registerComponent('main',() => App);
+// AppRegistry.registerComponent("main", () => App);

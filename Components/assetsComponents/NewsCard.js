@@ -19,34 +19,33 @@ import * as Animatable from "react-native-animatable";
 
 fh = Dimensions.get("screen").height;
 
-export default class EventCard extends Component {
+export default class NewsCard extends Component {
   constructor() {
     super();
     this.state = {
-      join: false,
-      loading: false,
-      notf: false
+      like: false,
+      loading: false
     };
   }
   rebuild = () => {
     this.setState({
-      join: !this.state.join
+      like: !this.state.like
     });
   };
 
   async componentDidMount() {
     Store.dispatch({
       type: "addState",
-      tag: "EventCompo",
+      tag: "NewsCompo",
       tagValue: this.rebuild
     });
-    var Joiners = this.props.data.Joiners;
+    var likes = this.props.data.likes;
     var UserId = await getUserData("id");
 
-    for (var i in Joiners) {
-      if (Joiners[i].UserId == UserId) {
+    for (var i in likes) {
+      if (likes[i].UserId == UserId) {
         this.setState({
-          join: true
+          like: true
         });
         break;
       }
@@ -55,7 +54,7 @@ export default class EventCard extends Component {
     this.bounce();
   }
   FullInfo = () => {
-    this.props.page.navigation.navigate("fullCard", { ...this.props.data });
+    this.props.page.navigation.navigate("NewsFullInfo", { ...this.props.data });
   };
   Join = async () => {
     if (this.state.loading == true) return; // block extra reqs !
@@ -66,7 +65,7 @@ export default class EventCard extends Component {
     var UserId = await getUserData("id");
     var token = JSON.parse(await _retrieveData("countryInfo")).token;
     FirebaseApp.firestore()
-      .collection("Events")
+      .collection("News")
       .limit(1)
       .where("Id", "==", id)
       .get()
@@ -79,29 +78,29 @@ export default class EventCard extends Component {
 
         var docId = snap.docs[0].id;
 
-        var Joiners = values.Joiners;
+        var likes = values.Likes;
 
-        if (this.state.join == false) {
-          Joiners.push({
+        if (this.state.like == false) {
+          likes.push({
             UserId: UserId,
             NotfKey: token
           });
         } else {
-          for (var i in Joiners) {
-            if (Joiners[i].UserId == UserId) {
-              Joiners.splice(i, 1); // delete
+          for (var i in likes) {
+            if (likes[i].UserId == UserId) {
+              likes.splice(i, 1); // delete
               break;
             }
           }
         }
-        FirebaseApp.firestore("Events")
-          .doc(`Events/${docId}`)
+        FirebaseApp.firestore("News")
+          .doc(`News/${docId}`)
           .update({
-            Joiners: Joiners
+            Likes: likes
           })
           .then(() => {
             this.setState({
-              join: !this.state.join,
+              like: !this.state.like,
               loading: false
             });
           });
@@ -149,7 +148,7 @@ export default class EventCard extends Component {
                   style={[
                     style.btnJoin,
                     {
-                      backgroundColor: this.state.join
+                      backgroundColor: this.state.like
                         ? "#00C851"
                         : "rgba(255, 136, 101, .16)"
                     }
@@ -166,11 +165,11 @@ export default class EventCard extends Component {
                         style={[
                           style.btnJoinTitle,
                           {
-                            color: this.state.join ? "#fff" : "#000"
+                            color: this.state.like ? "#fff" : "#000"
                           }
                         ]}
                       >
-                        {this.state.join ? "Joined" : "Join"}
+                        {this.state.like ? "Liked" : "Like"}
                       </T>
                     </V>
                   )}
@@ -181,24 +180,6 @@ export default class EventCard extends Component {
                   <T style={style.btnJoinTitle}>More</T>
                 </Touch>
               </V>
-              <Touch
-                onPress={() => {
-                  this.setState({
-                    notf: !this.state.notf
-                  });
-                }}
-              >
-                <V style={style.btnNotf}>
-                  <Img
-                    source={
-                      this.state.notf
-                        ? require("../../assets/turn-notifications-on-button.png")
-                        : require("../../assets/notifications-button.png")
-                    }
-                    style={style.btnNoftImage}
-                  ></Img>
-                </V>
-              </Touch>
             </V>
           </V>
         </V>
@@ -246,12 +227,12 @@ const style = Css.create({
     justifyContent: "space-between"
   },
   btnGroup: {
-    justifyContent: "flex-end",
+    justifyContent: "space-evenly",
     flexDirection: "row"
   },
   btnJoin: {
     height: 34,
-    width: 80,
+    width: "45%",
     borderRadius: 4,
     backgroundColor: "rgba(255, 136, 101, .16)",
     justifyContent: "center",
@@ -260,17 +241,5 @@ const style = Css.create({
   },
   btnJoinTitle: {
     fontSize: 16
-  },
-  btnNotf: {
-    width: 40,
-    height: 34,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(19, 105, 219, .16)",
-    borderRadius: 4
-  },
-  btnNoftImage: {
-    width: 17,
-    height: 17
   }
 });

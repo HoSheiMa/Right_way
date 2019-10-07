@@ -25,8 +25,12 @@ import Events from "./Events";
 import fullCard from "./assetsComponents/fullCard";
 import AddOne from "./AddOne";
 import { Notifications } from "expo";
+import News from "./News";
+import { Icon } from "react-native-elements";
+import NewsFullInfo from "./assetsComponents/NewsFullInfo";
 
 fw = Dimensions.get("screen").width;
+
 fh = Dimensions.get("screen").height;
 
 class Home_ extends Component {
@@ -35,6 +39,7 @@ class Home_ extends Component {
   };
   constructor() {
     super();
+
     this.state = {
       givenName: "",
       photoUrl: null,
@@ -63,14 +68,11 @@ class Home_ extends Component {
 
   render() {
     return (
-      <SafeAreaView
+      <View
         style={{
+          flex: 1,
           width: fw,
           height: fh
-        }}
-        forceInset={{
-          top: "always",
-          bottom: "always"
         }}
       >
         <View style={style.nav}>
@@ -148,42 +150,27 @@ class Home_ extends Component {
             <HomeCard />
           </ScrollView>
         </View>
-        <TouchableWithoutFeedback
-          onPress={() => {
-            console.log("clicked");
-            this.props.navigation.navigate("AddOne");
-          }}
-        >
-          <View style={style.FloatBtn}>
-            <Text style={style.floatbtntext}>+</Text>
-          </View>
-        </TouchableWithoutFeedback>
-      </SafeAreaView>
+        <View style={style.coverFloatBtn}>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              console.log("clicked");
+              this.props.navigation.navigate("AddOne");
+            }}
+          >
+            <View style={style.FloatBtn}>
+              <Text style={style.floatbtntext}>+</Text>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+      </View>
     );
   }
 }
 
-Events_N = createStackNavigator({
-  Events: {
-    screen: Events
-  },
-  fullCard: {
-    screen: fullCard
-  }
-});
-
-Home_N = createStackNavigator({
-  Home_: {
-    screen: Home_
-  },
-  AddOne: {
-    screen: AddOne
-  }
-});
-
 class HomeDrawer extends Component {
   state = {};
   async componentWillMount() {
+    console.log(this.props);
     var data = await getUserData(["givenName", "photoUrl"]);
 
     var dataC = await _retrieveData("countryInfo");
@@ -216,10 +203,10 @@ class HomeDrawer extends Component {
         <View
           style={{
             width: "100%",
-            height: 150,
+            height: 110,
             justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "#f8f9fa"
+            alignItems: "center"
+            // backgroundColor: "#f8f9fa"
           }}
         >
           <ImageBackground
@@ -239,7 +226,8 @@ class HomeDrawer extends Component {
           style={{
             width: "100%",
             height: 30,
-            backgroundColor: "#f8f9fa",
+
+            // backgroundColor: "#f8f9fa",
             marginTop: 4,
             flexDirection: "row",
             justifyContent: "space-evenly",
@@ -248,7 +236,9 @@ class HomeDrawer extends Component {
         >
           <Text
             style={{
-              fontWeight: "bold"
+              fontWeight: "bold",
+              textTransform: "uppercase",
+              fontSize: 19
             }}
           >
             {this.state.givenName}
@@ -258,7 +248,7 @@ class HomeDrawer extends Component {
           style={{
             width: "100%",
             height: 30,
-            backgroundColor: "#f8f9fa",
+            // backgroundColor: "#f8f9fa",
             marginTop: 4,
             flexDirection: "row",
             justifyContent: "center",
@@ -281,7 +271,7 @@ class HomeDrawer extends Component {
             {this.state.countryName}
           </Text>
         </View>
-        <ScrollView style={{ width: fw * 0.8 }}>
+        <ScrollView style={{ width: fw * 0.8, marginTop: 20 }}>
           <DrawerItems {...this.props} />
         </ScrollView>
       </SafeAreaView>
@@ -289,18 +279,72 @@ class HomeDrawer extends Component {
   }
 }
 
-const MyDrawerNavigator = createDrawerNavigator(
+const Events_N = createStackNavigator({
+  Events: {
+    screen: Events
+  },
+  fullCard: {
+    screen: fullCard
+  }
+});
+
+var News_N = createStackNavigator({
+  News: {
+    screen: News
+  },
+  NewsFullInfo: {
+    screen: NewsFullInfo
+  }
+});
+
+var Home_N = createStackNavigator({
+  Home_: {
+    screen: Home_
+  },
+  AddOne: {
+    screen: AddOne
+  }
+});
+
+var MyDrawerNavigator = createDrawerNavigator(
   {
     Home: {
-      screen: Home_N
+      screen: Home_N,
+      navigationOptions: {
+        drawerIcon: ({ tintColor }) => {
+          return (
+            <Icon name="home" color={tintColor} style={{ fontSize: 24 }} />
+          );
+        }
+      }
     },
     Events: {
-      screen: Events_N
+      screen: Events_N,
+      navigationOptions: {
+        drawerIcon: ({ tintColor }) => {
+          return (
+            <Icon name="event" color={tintColor} style={{ fontSize: 24 }} />
+          );
+        }
+      }
+    },
+    News: {
+      screen: News_N,
+      navigationOptions: {
+        drawerIcon: ({ tintColor }) => {
+          return (
+            <Icon name="loyalty" color={tintColor} style={{ fontSize: 24 }} />
+          );
+        }
+      }
     }
   },
   {
     contentComponent: HomeDrawer,
-    drawerWidth: fw * 0.8
+    drawerWidth: fw * 0.8,
+    contentOptions: {
+      activeTintColor: "#ff6347"
+    }
   }
 );
 
@@ -427,11 +471,13 @@ const style = StyleSheet.create({
     overflow: "scroll",
     flex: 1
   },
-  FloatBtn: {
+  coverFloatBtn: {
     position: "absolute",
     zIndex: 9999,
-    top: fh * 0.9,
-    left: fw * 0.8,
+    top: "90%",
+    left: "80%"
+  },
+  FloatBtn: {
     width: 65,
     height: 65,
     backgroundColor: "#fff",

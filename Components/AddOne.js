@@ -44,7 +44,7 @@ export default class AddOne extends Component {
 
   _startPopUp = () => {
     Animated.timing(this.state.popUpTop, {
-      toValue: this.state.typeof != null ? fh : fh * 0.5, // toggle animation
+      toValue: this.state.typeof != null ? fh : 0, // toggle animation
       duration: 400
     }).start();
   };
@@ -58,14 +58,9 @@ export default class AddOne extends Component {
 
   render() {
     return (
-      <SafeAreaView
+      <View
         style={{
-          width: fw,
-          height: fh
-        }}
-        forceInset={{
-          top: "always",
-          bottom: "always"
+          flex: 1
         }}
       >
         <TouchableWithoutFeedback
@@ -179,15 +174,16 @@ export default class AddOne extends Component {
               style={{
                 width: "100%",
                 height: "100%",
-                justifyContent: "flex-end",
-                alignItems: "center",
+                justifyContent: "space-evenly",
+                alignItems: "flex-end",
                 padding: 8,
+                flexDirection: "row-reverse",
                 position: "absolute"
               }}
             >
               <AwesomeButtonRick
                 type="secondary"
-                width={fw * 0.8}
+                width={fw * 0.4}
                 progress
                 borderColor="#00C851"
                 backgroundDarker="#007E33"
@@ -204,10 +200,31 @@ export default class AddOne extends Component {
               >
                 Ok!
               </AwesomeButtonRick>
+              <AwesomeButtonRick
+                type="secondary"
+                width={fw * 0.4}
+                progress
+                borderColor="#ff4444"
+                backgroundDarker="#CC0000"
+                textColor="#CC0000"
+                onPress={next => {
+                  if (this.state.typeof != null) {
+                    // console.log("here");
+                    this._startPopUp();
+                    this._startFadeOut();
+                    this.setState({
+                      typeof: null
+                    });
+                    next();
+                  }
+                }}
+              >
+                Cancel!
+              </AwesomeButtonRick>
             </View>
           </View>
         </Animated.View>
-      </SafeAreaView>
+      </View>
     );
   }
 }
@@ -268,8 +285,8 @@ const style = StyleSheet.create({
   },
   popCover: {
     position: "absolute",
-    width: fw,
-    height: fh * 0.5,
+    width: "100%",
+    height: "100%",
     // backgroundColor: "#000",
 
     zIndex: -1,

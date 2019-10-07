@@ -15,14 +15,16 @@ import { _retrieveData } from "./helpers/Functions";
 fw = Dimensions.get("screen").width;
 fh = Dimensions.get("screen").height;
 
-import EventCard from "./assetsComponents/EventCard";
 import FirebaseApp from "./helpers/FirebaseApp";
-export default class Events extends Component {
+import EventCard from "./assetsComponents/EventCard";
+import NewsCard from "./assetsComponents/NewsCard";
+
+export default class News extends Component {
   constructor() {
     super();
     this.state = {
       countryLogoUrl: null,
-      events: []
+      News: []
     };
   }
   async componentWillMount() {
@@ -37,7 +39,7 @@ export default class Events extends Component {
 
   componentDidMount() {
     FirebaseApp.firestore()
-      .collection("Events")
+      .collection("News")
       .onSnapshot(d => {
         if (d.isEqual == true) {
           this.setState({
@@ -46,94 +48,91 @@ export default class Events extends Component {
 
           return;
         }
-        var events = [];
+        var News = [];
         d.forEach(doc => {
           var data = doc.data();
-          events.push(data);
+          News.push(data);
         });
 
         this.setState({
-          events: events
+          News: News
         });
-        // console.log(d);
       });
   }
 
   static navigationOptions = {
     header: null
   };
+
   render() {
     return (
       <V>
-        <V style={style.listCover}>
-          <V style={style.nav}>
-            <Touch
-              onPress={() => {
-                console.log("Open Drawer");
-                this.props.navigation.openDrawer();
-              }}
-            >
-              <V>
-                <Img
-                  style={style.nav_lsit}
-                  source={require("../assets/list-nav.png")}
-                ></Img>
-              </V>
-            </Touch>
-            <T style={style.nav_Logo}> LOGO </T>
-            <V style={style.navCountryCover}>
+        <V style={style.nav}>
+          <Touch
+            onPress={() => {
+              console.log("Open Drawer");
+              this.props.navigation.openDrawer();
+            }}
+          >
+            <V>
               <Img
-                source={
-                  this.state.countryLogoUrl == null
-                    ? require("../assets/Flag_-_Unknown.png")
-                    : { uri: this.state.countryLogoUrl }
-                }
-                style={style.navCountry}
+                style={style.nav_lsit}
+                source={require("../assets/list-nav.png")}
               ></Img>
             </V>
-          </V>
-
-          <V style={style.bgCover}>
+          </Touch>
+          <T style={style.nav_Logo}> LOGO </T>
+          <V style={style.navCountryCover}>
             <Img
-              style={style.bg}
-              source={require("../assets/undraw_gifts_btw0.png")}
+              source={
+                this.state.countryLogoUrl == null
+                  ? require("../assets/Flag_-_Unknown.png")
+                  : { uri: this.state.countryLogoUrl }
+              }
+              style={style.navCountry}
             ></Img>
           </V>
-          <T style={style.title}>Events</T>
-          <SV style={style.eventsList}>
-            {this.state.events.map((v, i) => {
-              return <EventCard key={i} page={this.props} data={v} />;
-            })}
-            {this.state.events == null ? (
-              <V
-                style={{
-                  textAlign: "center",
-                  alignItems: "center",
-                  padding: 12,
-                  fontSize: 19
-                }}
-              >
-                <T>No Events Yet.</T>
-              </V>
-            ) : (
-              <V></V>
-            )}
-            {this.state.events != null && this.state.events.length == 0 ? (
-              <V
-                style={{
-                  textAlign: "center",
-                  alignItems: "center",
-                  padding: 12,
-                  fontSize: 19
-                }}
-              >
-                <T>Loading...</T>
-              </V>
-            ) : (
-              <V></V>
-            )}
-          </SV>
         </V>
+        <V style={style.bgCover}>
+          <Img
+            style={style.bg}
+            source={require("../assets/undraw_ideas_s70l.png")}
+          ></Img>
+        </V>
+        <T style={style.title}>News</T>
+        <SV style={style.eventsList}>
+          {this.state.News.map((v, i) => {
+            return <NewsCard key={i} page={this.props} data={v} />;
+          })}
+          {this.state.News == null ? (
+            <V
+              style={{
+                textAlign: "center",
+                alignItems: "center",
+                padding: 12,
+                fontSize: 19
+              }}
+            >
+              <T>No Events Yet.</T>
+            </V>
+          ) : (
+            <V></V>
+          )}
+          {this.state.News != null && this.state.News.length == 0 ? (
+            <V
+              style={{
+                textAlign: "center",
+                alignItems: "center",
+                padding: 12,
+                fontSize: 19
+              }}
+            >
+              <T>Loading...</T>
+            </V>
+          ) : (
+            <V></V>
+          )}
+        </SV>
       </V>
     );
   }
@@ -192,8 +191,7 @@ const style = StyleSheet.create({
     textAlign: "center"
   },
   eventsList: {
-    overflow: "scroll",
-    flex: 1
+    overflow: "scroll"
   },
   title: {
     color: "#000",
